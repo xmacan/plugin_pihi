@@ -7,7 +7,6 @@ Ping delay history
 Petr Macek (petr.macek@kostax.cz)
 
 ## Screenshot
-![topx_0 4](https://user-images.githubusercontent.com/26485719/33798513-1a7a4dba-dd1a-11e7-8ffe-f7f76c5124ba.png)
 
 ## Installation
 Copy directory pihi to plugins directory
