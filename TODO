@@ -1,6 +1,7 @@
 images/pihi - potrebuju ousko
-do configu dat, jak dlouho ma ty data udrzovat (den, tyden)
+
 casem pridat i statistiku a sumarizace za hodiny/dny
+chart.js?
 
 per host byh mohl mit hranici, co kdy to brat jako ok a pak to v prehledu zobrazovat
 
@@ -8,3 +9,12 @@ asi delat denni prehledy, kdyb budou radky hodiny a sloupce minuty
 pak udelat i dalsi prehledy
 
 pihi.php - testy delat pres nfilter
+
+pridat do readme screenshot
+
+kdyz ma check pres snmp, tak cur_time je 0.00000
+
+pridat hlasku, ze musi mit zapnuty ping
+
+
+kdyz nemam zadne hosty a dam zobrazit pihi, tak chyba

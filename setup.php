@@ -6,6 +6,11 @@ function plugin_pihi_install ()	{
     api_plugin_register_hook('pihi', 'top_header_tabs', 'pihi_show_tab', 'setup.php');
     api_plugin_register_hook('pihi', 'top_graph_header_tabs', 'pihi_show_tab', 'setup.php');
 
+
+    api_plugin_register_hook('pihi', 'config_form','pihi_config_form', 'setup.php');
+    api_plugin_register_hook('pihi', 'api_device_save', 'pihi_api_device_save', 'setup.php');
+
+
     // muze zapinat topx adminovi a davam moznost ho pridavat ostatnim
     api_plugin_register_realm('pihi', 'pihi.php,', 'Plugin PiHi - view', 1);
 
@@ -20,27 +25,22 @@ function pihi_setup_database()	{
     //$data['columns'][] = array('name' => 'id', 'type' => 'int(11)', 'NULL' => false,'auto_increment' => true);
     $data['columns'][] = array('name' => 'host_id', 'type' => "int(11)", 'NULL' => false);
     $data['columns'][] = array('name' => 'days', 'type' => "int(4)", 'default' => '30', 'NULL' => false);
-
     $data['type'] = 'MyISAM';
     $data['comment'] = 'pihi data';
     api_plugin_db_table_create ('pihi', 'plugin_pihi_setting', $data);
-
 
     $data = array();
     //$data['columns'][] = array('name' => 'id', 'type' => 'int(11)', 'NULL' => false,'auto_increment' => true);
     $data['columns'][] = array('name' => 'host_id', 'type' => "int(11)", 'NULL' => false);
     $data['columns'][] = array('name' => 'duration', 'type' => "decimal(10,5)", 'NULL' => true);
     $data['columns'][] = array('name' => 'date', 'type' => "datetime", 'NULL' => false);
-
     //$data['primary'] = '(host_id,date)';
     $data['type'] = 'MyISAM';
     $data['comment'] = 'pihi data';
     api_plugin_db_table_create ('pihi', 'plugin_pihi_data', $data);
 
 //    db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number) values ('desc','ucd/net - Load Average - 1 Minute','9b82d44eb563027659683765f92c9757','load_1min=load_1min','Load','strip','load','2')");
-
 //    db_execute ("ALTER TABLE plugin_pihi_data add index (host_id)");
-
     // ! mozna jeste udelat pihi_statistika na soucty apod.
 
 }
@@ -116,6 +116,89 @@ function pihi_show_tab () {
 		print '<a href="' . $config['url_path'] . 'plugins/pihi/pihi.php"><img src="' . $config['url_path'] . 'plugins/pihi/images/tab_pihi' . ($cp ? '_down': '') . '.gif" alt="pihi" align="absmiddle" border="0"></a>';
 	}
 }
+
+
+function pihi_config_form () {
+        global $fields_host_edit;
+        $fields_host_edit2 = $fields_host_edit;
+        $fields_host_edit3 = array();
+        foreach ($fields_host_edit2 as $f => $a) {
+                $fields_host_edit3[$f] = $a;
+                if ($f == 'disabled') {
+                        $fields_host_edit3['pihi_spacer'] = array(
+                                'friendly_name' => __('Plugin Ping History', 'pihi'),
+                                'method' => 'spacer',
+                                'collapsible' => true
+                        );
+                        $fields_host_edit3['pihi_setting'] = array(
+                                'friendly_name' => __('Ping history setting', 'pihi'),
+                                'method' => 'drop_array',
+                                'array' =>  array(
+                                        '0' => __('Disabled', 'pihi'),
+                                        '1' => __('Enabled, last day', 'pihi'),
+                                        '3' => __('Enabled, last 3 days', 'pihi'),
+                                        '7' => __('Enabled, last week', 'pihi'),
+                                        '31' => __('Enabled, last month', 'pihi'),
+                                ),
+                                'description' => __('How log store ping history?', 'pihi'),
+                                'value' => '|arg1:pihi_setting|',
+                                //'on_change' => 'changeNotify()',
+                                'default' => '0',
+                                'form_id' => false
+
+
+
+                        );
+                }
+        }
+        $fields_host_edit = $fields_host_edit3;
+}
+
+
+function pihi_api_device_save($save) {
+        global $config;
+
+
+        if (isset_request_var('pihi_setting')) {
+                $days = form_input_validate(get_nfilter_request_var('pihi_setting',30), 'pihi_setting', '^[0-9]$', true, 3);
+	} 
+
+
+
+        if (db_fetch_assoc('SELECT * FROM plugin_pihi_setting WHERE host_id = ' . $save['id']))	{
+            $sql = 'UPDATE plugin_pihi_setting SET days=' . $days . ' where host_id = ' . $save['id'];
+        }
+        else	{
+            $sql = 'insert into plugin_pihi_setting (host_id,days) values (' . $save['id'] . ',' . $days . ')';
+        }
+
+	$result = db_execute($sql);
+
+
+
+/*
+
+        if (!isset($result[0]['disabled'])) {
+                return $save;
+        }
+
+        if ($save['disabled'] != $result[0]['disabled']) {
+                if ($save['disabled'] == '') {
+                        $sql = 'UPDATE plugin_pihi_setting SET days=' . $days . ' where host_id = ' . $save['id'];
+                } else {
+                        $sql = 'UPDATE thold_data SET thold_enabled = "off" WHERE host_id=' . $save['id'];
+                        plugin_thold_log_changes($save['id'], 'disabled_host');
+                }
+                $result = db_execute($sql);
+        }
+*/
+
+
+
+        return $save;
+}
+
+
 
 
 ?>
