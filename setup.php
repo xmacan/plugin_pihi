@@ -32,7 +32,7 @@ function pihi_setup_database()	{
     $data = array();
     //$data['columns'][] = array('name' => 'id', 'type' => 'int(11)', 'NULL' => false,'auto_increment' => true);
     $data['columns'][] = array('name' => 'host_id', 'type' => "int(11)", 'NULL' => false);
-    $data['columns'][] = array('name' => 'duration', 'type' => "decimal(10,5)", 'NULL' => true);
+    $data['columns'][] = array('name' => 'duration', 'type' => "decimal(10,3)", 'NULL' => true);
     $data['columns'][] = array('name' => 'date', 'type' => "datetime", 'NULL' => false);
     //$data['primary'] = '(host_id,date)';
     $data['type'] = 'MyISAM';
@@ -93,7 +93,7 @@ function pihi_poller_bottom () {
 	}
 	$in = substr($in,0,-1);
     
-	db_execute ("insert into plugin_pihi_data (host_id,duration,date) select id,cur_time,now() from host where id in ($in)");
+	db_execute ("insert into plugin_pihi_data (host_id,duration,date) select id,round(cur_time,3),now() from host where id in ($in)");
 
     }
         
