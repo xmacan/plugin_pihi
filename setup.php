@@ -6,6 +6,7 @@ function plugin_pihi_install ()	{
     api_plugin_register_hook('pihi', 'top_header_tabs', 'pihi_show_tab', 'setup.php');
     api_plugin_register_hook('pihi', 'top_graph_header_tabs', 'pihi_show_tab', 'setup.php');
 
+    api_plugin_register_hook('pihi', 'config_arrays', 'pihi_config_arrays', 'setup.php');
 
     api_plugin_register_hook('pihi', 'config_form','pihi_config_form', 'setup.php');
     api_plugin_register_hook('pihi', 'api_device_save', 'pihi_api_device_save', 'setup.php');
@@ -160,20 +161,35 @@ function pihi_api_device_save($save) {
 
 
         if (isset_request_var('pihi_setting')) {
-                $days = form_input_validate(get_nfilter_request_var('pihi_setting',30), 'pihi_setting', '^[0-9]$', true, 3);
+                $days = form_input_validate(get_nfilter_request_var('pihi_setting'), 'pihi_setting', '^[0-9]$', true, 3);
 	} 
 
+        $enabled = db_fetch_cell('SELECT count(*) FROM plugin_pihi_setting WHERE host_id = ' . $save['id']) > 0  ? true : false;
 
+	if (!$enabled && $days > 0)	{	//enable pihi
+	    if ($save['availability_method'] != 1 && $save['availability_method'] != 3 && $save['availability_method'] != 4)	{
+		raise_message('pihi_save');
+	    }
+	    else	{
+        	db_execute('UPDATE plugin_pihi_setting SET days=' . $days . ' where host_id = ' . $save['id']);
+        	db_execute('insert into plugin_pihi_setting (host_id,days) values (' . $save['id'] . ',' . $days . ')');
+	    }
+	}
 
-        if (db_fetch_assoc('SELECT * FROM plugin_pihi_setting WHERE host_id = ' . $save['id']))	{
-            $sql = 'UPDATE plugin_pihi_setting SET days=' . $days . ' where host_id = ' . $save['id'];
-        }
-        else	{
-            $sql = 'insert into plugin_pihi_setting (host_id,days) values (' . $save['id'] . ',' . $days . ')';
-        }
+	elseif ($enabled && $days == 0)	{	// disable pihi
+            db_execute('UPDATE plugin_pihi_setting SET days=0 where host_id = ' . $save['id']);
+            db_execute('DELETE FROM plugin_pihi_setting where host_id =' .  $save['id']);
+            db_execute('DELETE FROM  plugin_pihi_data where host_id =' .  $save['id']);
+	}
+	elseif ($enabled && $days > 0)	{	// maybe change history
 
-	$result = db_execute($sql);
-
+	    if ($save['availability_method'] != 1 && $save['availability_method'] != 3 && $save['availability_method'] != 4)	{
+		raise_message('pihi_save');
+	    }
+	    else	{
+        	db_execute('UPDATE plugin_pihi_setting SET days=' . $days . ' where host_id = ' . $save['id']);
+    	    }
+	} 
 
 
 /*
@@ -198,6 +214,25 @@ function pihi_api_device_save($save) {
         return $save;
 }
 
+function pihi_config_arrays () {
+        global $messages;
+
+        $messages['pihi_save'] = array(
+                'message' => __('If you enable pihi you have to select availability to ping/ping or snmp/ping and snmp', 'pihi'),
+                'type' => 'error'
+        );
+
+
+
+/*
+        if (isset($_SESSION['thold_message']) && $_SESSION['thold_message'] != '') {
+                $messages['thold_message'] = array(
+                        'message' => $_SESSION['thold_message'],
+                        'type' => 'info'
+                );
+        }
+*/
+}
 
 
 
