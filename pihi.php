@@ -145,7 +145,7 @@ if (count($result) > 0)	{
     echo '<table>';
     foreach ($result as $row)	{
 	if ($hour != $row['xhour'])
-	    echo '<tr><td>' . $row['xhour'] . '</td>';
+	    echo '<tr><td>' . $row['xhour'] . ' </td>';
     
 	if ($first)
 	    echo '<td>' . $row['xminute'] . '<br/>';
