@@ -10,6 +10,8 @@ $poller_interval = read_config_option('poller_interval');
 $selectedTheme = get_selected_theme();
 
 
+
+
 $ar_age = array ("month" => "Last month", "week" => "Last week", "yesterday" => "Yesterday", "today" => "Today"); 
 
 
@@ -34,6 +36,8 @@ general_header();
 
 //print "<link type='text/css' href='" . $config["url_path"] . "plugins/topx/themes/common.css' rel='stylesheet'>\n";
 //print "<link type='text/css' href='" . $config["url_path"] . "plugins/topx/themes/" . $selectedTheme . ".css' rel='stylesheet'>\n";
+
+echo "<link type='text/css' href='" . $config['url_path'] . "plugins/pihi/themes/common.css' rel='stylesheet'>";
 
 
 ?>
@@ -142,7 +146,7 @@ echo 'select duration,date, hour(date) as xhour minute(date) as xminute from plu
 if (count($result) > 0)	{    
     $hour = -1;
     $first = true;
-    echo '<table>';
+    echo '<table class="pihi_table">';
     foreach ($result as $row)	{
 	if ($hour != $row['xhour'])
 	    echo '<tr><td>' . $row['xhour'] . ' </td>';
