@@ -181,9 +181,9 @@ if (count($result) > 0)	{
 //echo "<br/>$date<br/><br/>";
 //echo "<br/>$dura<br/><br/>";
 
-              $xid = "x" . substr(md5($dispdata['line']['title1']),0,7);
+              //$xid = "x" . substr(md5($dispdata['line']['title1']),0,7);
 
-                print "<div style=\"background: white;\"><canvas id=\"line_$xid\"></canvas>\n";
+                print "<div style=\"background: white;\"><canvas  width=\"800\" height=\"300\" id='mychart' ></canvas>\n";
                 print "<script type='text/javascript'>\n";
                 $title1 = 'Ping history';
                 $line_labels = $date;
@@ -191,8 +191,8 @@ if (count($result) > 0)	{
 
 
                 print <<<EOF
-var $xid = document.getElementById("line_$xid").getContext("2d");
-new Chart($xid, {
+var ctx = document.getElementById("mychart").getContext("2d");
+new Chart(ctx, {
     type: 'line',
     data: {
         labels: [$line_labels],
@@ -207,10 +207,11 @@ new Chart($xid, {
         ]
     },
     options: {
-        responsive: true,
+        responsive: false,
         tooltipTemplate: "<%= value %>%"
     }
 });
+
 EOF;
 print "</script>\n";
 
