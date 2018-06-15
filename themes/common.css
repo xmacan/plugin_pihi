@@ -4,3 +4,4 @@
 .pihi_table tr:nth-child(odd) { background-color: #eee;	}
 .pihi_table tr:nth-child(even) td {  border: 1px solid #eee !important;	}
 .pihi_table tr td:first-child { vertical-align: top; font-weight: bold;}
+

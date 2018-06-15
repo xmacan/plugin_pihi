@@ -12,7 +12,7 @@ $selectedTheme = get_selected_theme();
 
 
 
-$ar_age = array ("month" => "Last month", "week" => "Last week", "yesterday" => "Yesterday", "today" => "Today"); 
+$ar_age = array ("168" => "Last week", "24" => "Last day", "6" => "Last 6 hours", "1" => "Last hour"); 
 
 
 /* if the user pushed the 'clear' button */
@@ -135,12 +135,17 @@ foreach ($ar_sort as $key=>$value)	{
 
 html_end_box();
 
+$mins = ($_SESSION['age']*60) + date("i");
+
+$sql  = 'select duration,date, hour(date) as xhour, minute(date) as xminute from plugin_pihi_data where host_id = ' . $_SESSION['host'] ;
+$sql .= ' and date between date_sub(now(),interval ' . $mins . ' minute) and now() ';
+$sql .= ' order by date';
+
+echo $sql;	
 
 // tady zjistit, jake vsechny typy mam (cpu, hdd, ...)
-$result = db_fetch_assoc ('select duration,date, hour(date) as xhour, minute(date) as xminute from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' order by date');
+$result = db_fetch_assoc ($sql);
 
-echo 'select duration,date, hour(date) as xhour minute(date) as xminute from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' order by date';
-//!!! tady potom jeste bude limit nebo spis select date between
 
 
 if (count($result) > 0)	{    
@@ -151,12 +156,15 @@ if (count($result) > 0)	{
 	if ($hour != $row['xhour'])
 	    echo '<tr><td>' . $row['xhour'] . ' </td>';
     
-	if ($first)
+	if ($first)	{
 	    echo '<td>' . $row['xminute'] . '<br/>';
+	}
 	else
 	    echo '<td>';
-	
-	echo  $row['duration'] . '</td>';
+
+	echo $row['duration'] > 30 ? '<font color="red">' . $row['duration'] . '</font>' : $row['duration'] . '</td>';
+
+	echo '</td>';
 	$hour = $row['xhour'];
     }
     echo '</table>';
