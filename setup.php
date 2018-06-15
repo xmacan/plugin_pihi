@@ -33,7 +33,7 @@ function pihi_setup_database()	{
     $data = array();
     //$data['columns'][] = array('name' => 'id', 'type' => 'int(11)', 'NULL' => false,'auto_increment' => true);
     $data['columns'][] = array('name' => 'host_id', 'type' => "int(11)", 'NULL' => false);
-    $data['columns'][] = array('name' => 'duration', 'type' => "decimal(10,3)", 'NULL' => true);
+    $data['columns'][] = array('name' => 'duration', 'type' => "decimal(6,2)", 'NULL' => true);
     $data['columns'][] = array('name' => 'date', 'type' => "datetime", 'NULL' => false);
     //$data['primary'] = '(host_id,date)';
     $data['type'] = 'MyISAM';
