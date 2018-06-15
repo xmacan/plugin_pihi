@@ -141,7 +141,7 @@ $sql  = 'select duration,date, hour(date) as xhour, minute(date) as xminute from
 $sql .= ' and date between date_sub(now(),interval ' . $mins . ' minute) and now() ';
 $sql .= ' order by date';
 
-echo $sql;	
+//echo $sql;	
 
 // tady zjistit, jake vsechny typy mam (cpu, hdd, ...)
 $result = db_fetch_assoc ($sql);
@@ -153,6 +153,10 @@ if (count($result) > 0)	{
     $first = true;
     echo '<table class="pihi_table">';
     foreach ($result as $row)	{
+	$date .= '"' . substr($row['date'],5,-3) . '",';
+	$dura .= $row['duration'] . ',';
+
+    
 	if ($hour != $row['xhour'])
 	    echo '<tr><td>' . $row['xhour'] . ' </td>';
     
@@ -168,6 +172,56 @@ if (count($result) > 0)	{
 	$hour = $row['xhour'];
     }
     echo '</table>';
+    
+    // displaying graph
+
+    $date = substr($date,0,-1);
+    $dura = substr($dura,0,-1);
+
+//echo "<br/>$date<br/><br/>";
+//echo "<br/>$dura<br/><br/>";
+
+              $xid = "x" . substr(md5($dispdata['line']['title1']),0,7);
+
+                print "<div style=\"background: white;\"><canvas id=\"line_$xid\"></canvas>\n";
+                print "<script type='text/javascript'>\n";
+                $title1 = 'Ping history';
+                $line_labels = $date;
+                $line_values = $dura;
+
+
+                print <<<EOF
+var $xid = document.getElementById("line_$xid").getContext("2d");
+new Chart($xid, {
+    type: 'line',
+    data: {
+        labels: [$line_labels],
+        datasets: [{
+            label: '$title1',
+            data: [$line_values],
+            borderColor: 'rgba(220,220,220,0.5)',
+            backgroundColor: 'rgba(220,220,220,0.5)',
+
+        },
+
+        ]
+    },
+    options: {
+        responsive: true,
+        tooltipTemplate: "<%= value %>%"
+    }
+});
+EOF;
+print "</script>\n";
+
+print "</div>\n";
+
+
+    
+    
+    
+    // end of graph
+
 }
 else	{	
     echo "No data";
