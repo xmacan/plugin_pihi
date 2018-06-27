@@ -10,9 +10,7 @@ $poller_interval = read_config_option('poller_interval');
 $selectedTheme = get_selected_theme();
 
 
-
-
-$ar_age = array ("168" => "Last week", "24" => "Last day", "6" => "Last 6 hours", "1" => "Last hour"); 
+$ar_age = array ("168" => "Week", "24" => "Day", "6" => "6 hours", "1" => "1 hour"); 
 
 
 /* if the user pushed the 'clear' button */
@@ -166,7 +164,7 @@ if (count($result) > 0)	{
 	else
 	    echo '<td>';
 
-	echo $row['duration'] > 30 ? '<font color="red">' . $row['duration'] . '</font>' : $row['duration'] . '</td>';
+	echo $row['duration'] > 30 ? '<font color="red"><b>' . $row['duration'] . '</b></font>' : $row['duration'] . '</td>';
 
 	echo '</td>';
 	$hour = $row['xhour'];
@@ -208,8 +206,18 @@ new Chart(ctx, {
     },
     options: {
         responsive: false,
-        tooltipTemplate: "<%= value %>%"
+        tooltipTemplate: "<%= value %>%",
+          scales: {
+	    yAxes: [{
+    		scaleLabel: {
+    		    display: true,
+    		    labelString: 'Duration [ms]'
+    		}
+	    }]
+	}
     }
+
+    
 });
 
 EOF;
