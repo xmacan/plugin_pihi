@@ -77,7 +77,6 @@ function plugin_pihi_check_config () {
 function pihi_poller_bottom () {
     global $config;
 	
-    //list($micro,$seconds) = split(" ", microtime());
     list($micro,$seconds) = explode(" ", microtime());
     $start = $seconds + $micro;
 
@@ -87,16 +86,26 @@ function pihi_poller_bottom () {
 
     // tady ulozit z host do moji tabulky nebo rrd
     $in = '';
-    $list_of_hosts = db_fetch_assoc ('select host_id from plugin_pihi_setting');
+    $list_of_hosts = db_fetch_assoc ('select host_id,days from plugin_pihi_setting');
     if (count($list_of_hosts) > 0)	{
 	foreach ($list_of_hosts as $host)	{
 	    $in .= $host['host_id'] . ',';
+
+	// delete old data
+	if (date('H') == 23 && date('i') > 53)	{
+	    $host['days'];
+	    db_execute('delete from plugin_pihi_data where host_id=' . $host['host_id'] . ' and date < date_sub(now(), \'interval ' . $host['days'] . ' day\')');
+	}    
+
+
 	}
 	$in = substr($in,0,-1);
     
 	db_execute ("insert into plugin_pihi_data (host_id,duration,date) select id,round(cur_time,3),now() from host where id in ($in)");
 
     }
+    
+        
         
     list($micro,$seconds) = explode(" ", microtime());
     $end = $seconds + $micro;
@@ -139,7 +148,7 @@ function pihi_config_form () {
                                         '1' => __('Enabled, last day', 'pihi'),
                                         '3' => __('Enabled, last 3 days', 'pihi'),
                                         '7' => __('Enabled, last week', 'pihi'),
-                                        '31' => __('Enabled, last month', 'pihi'),
+                                        '30' => __('Enabled, last month', 'pihi'),
                                 ),
                                 'description' => __('How log store ping history?', 'pihi'),
                                 'value' => '|arg1:pihi_setting|',
