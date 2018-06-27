@@ -27,7 +27,12 @@ if (!isset($_SESSION["age"]))
 if ( isset_request_var ('host') )
     $_SESSION["host"] = get_request_var ('host');
 if (!isset($_SESSION["host"]))
-    $_SESSION["host"] = "";
+    $_SESSION["host"] = '';
+
+
+if ( isset_request_var ('from') )
+    $_SESSION['from'] = get_request_var ('from');
+
 
 
 general_header();
@@ -127,16 +132,51 @@ foreach ($ar_sort as $key=>$value)	{
   </table>
  </form>
 </td>
-</tr>
+<td>
+
+
 
 <?php
 
-html_end_box();
 
 $mins = ($_SESSION['age']*60) + date("i");
 
+if (!isset($_SESSION['from']))
+    $_SESSION['from'] = db_fetch_cell ('select now()');
+
+
+
+$selected_date = db_fetch_cell ('select min(date) as xdate from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' and date between date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) and \'' . $_SESSION['from'] . '\'');
+//echo '<br/>select min(date) as xdate from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' and date between date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) and \'' . $_SESSION['from'] . '\'<br/>';
+
+// before
+if (db_fetch_cell ('select count(date) from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' and date < \'' . $_SESSION['from'] . '\''))	{
+    $before = db_fetch_cell ('select date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute)');
+
+}
+
+if (db_fetch_cell ('select count(date) from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' and date > \'' . $_SESSION['from'] . '\''))	{
+    $after = db_fetch_cell ('select date_add(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute)');
+}
+
+echo '<b>';
+if (isset($before) && $before > 0) echo '<a href="?from=' . $before . '">&lt;&lt;</a> ';
+else echo '&lt;&lt; ';
+
+echo $selected_date;
+
+if (isset($after) && $after > 0) echo '<a href="?from=' . $after . '">&gt;&gt;</a> ';
+else echo '&gt;&gt; ';
+echo '</b>';
+
+
+echo '</td></tr>';
+html_end_box();
+
+
+
 $sql  = 'select duration,date, hour(date) as xhour, minute(date) as xminute from plugin_pihi_data where host_id = ' . $_SESSION['host'] ;
-$sql .= ' and date between date_sub(now(),interval ' . $mins . ' minute) and now() ';
+$sql .= ' and date between date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) and \'' . $_SESSION['from'] . '\'';
 $sql .= ' order by date';
 
 //echo $sql;	
@@ -147,6 +187,9 @@ $result = db_fetch_assoc ($sql);
 
 
 if (count($result) > 0)	{    
+    $date = '';
+    $dura = '';
+
     $hour = -1;
     $first = true;
     echo '<table class="pihi_table">';
