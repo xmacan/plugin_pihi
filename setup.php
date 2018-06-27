@@ -161,7 +161,7 @@ function pihi_api_device_save($save) {
 
 
         if (isset_request_var('pihi_setting')) {
-                $days = form_input_validate(get_nfilter_request_var('pihi_setting'), 'pihi_setting', '^[0-9]$', true, 3);
+                $days = form_input_validate(get_nfilter_request_var('pihi_setting'), 'pihi_setting', '^[0-9]{1,2}$', true, 3);
 	} 
 
         $enabled = db_fetch_cell('SELECT count(*) FROM plugin_pihi_setting WHERE host_id = ' . $save['id']) > 0  ? true : false;
