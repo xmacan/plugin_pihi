@@ -18,20 +18,24 @@ if (get_request_var('clear_x')) {
     unset($_SESSION["age"]);
 }
 
+
 if ( isset_request_var ('age') )
-    $_SESSION["age"] = get_request_var ('age');
+//    $_SESSION["age"] = get_request_var ('age');
+    $_SESSION["age"] = get_filter_request_var ('age');
 if (!isset($_SESSION["age"]))
-    $_SESSION["age"] = "today";
+    $_SESSION["age"] = "6";
 
 
 if ( isset_request_var ('host') )
-    $_SESSION["host"] = get_request_var ('host');
+    $_SESSION["host"] = get_filter_request_var ('host');
 //if (!isset($_SESSION["host"]))
 //    $_SESSION["host"] = '';
 
 
 if ( isset_request_var ('from') )
-    $_SESSION['from'] = get_request_var ('from');
+    //$_SESSION['from'] = get_request_var ('from');
+    
+    $_SESSION['from'] = get_filter_request_var ('from', FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/')));
 
 
 
