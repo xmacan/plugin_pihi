@@ -26,8 +26,8 @@ if (!isset($_SESSION["age"]))
 
 if ( isset_request_var ('host') )
     $_SESSION["host"] = get_request_var ('host');
-if (!isset($_SESSION["host"]))
-    $_SESSION["host"] = '';
+//if (!isset($_SESSION["host"]))
+//    $_SESSION["host"] = '';
 
 
 if ( isset_request_var ('from') )
@@ -96,8 +96,12 @@ foreach ($ar_age as $key=>$value)	{
 <?php
 $hosts = db_fetch_assoc ('select distinct(host_id) as host_id, description from plugin_pihi_setting left join host on host.id=host_id order by description');
 foreach ($hosts as $host)	{
-    if ($_SESSION['host'] == $host['host_id'])
+    // default host
+    if (!isset($_SESSION['host'])) $_SESSION['host'] = $host['host_id'];
+
+    if ($_SESSION['host'] == $host['host_id'])	{
 	echo '<option value="' . $host['host_id'] . '" selected="selected">' . $host['description'] . '</option>';
+    }
     else
 	echo '<option value="' . $host['host_id'] . '">' . $host['description'] . '</option>';
 }
@@ -138,12 +142,10 @@ foreach ($ar_sort as $key=>$value)	{
 
 <?php
 
-
 $mins = ($_SESSION['age']*60) + date("i");
 
 if (!isset($_SESSION['from']))
     $_SESSION['from'] = db_fetch_cell ('select now()');
-
 
 
 $selected_date = db_fetch_cell ('select min(date) as xdate from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' and date between date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) and \'' . $_SESSION['from'] . '\'');
