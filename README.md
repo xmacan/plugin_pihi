@@ -13,8 +13,10 @@ Petr Macek (petr.macek@kostax.cz)
 ## Installation
 Copy directory pihi to plugins directory
 Check file permission (Linux/unix - readable for www server)
-Enable plugin (Console -> Plugin management
-Wait at least 3 poller cycles for result
+Enable plugin (Console -> Plugin management)
+
+## How to use?
+Console -> Devices -> Choose host -> Enable Ping History in form 
     
 ## Upgrade    
 Copy and rewrite files
@@ -27,6 +29,9 @@ If you find a problem, let me know via github or https://forums.cacti.net
    
 
 ## Changelog
+	--- 0.2
+		First release with basic functionality
+
 	--- 0.1
 		Beginning
 
