@@ -1,23 +1,17 @@
 <?php
 
 function plugin_pihi_install ()	{
-//    api_plugin_register_hook('topx', 'poller_output', 'topx_poller_output', 'setup.php');
     api_plugin_register_hook('pihi', 'poller_bottom', 'pihi_poller_bottom', 'setup.php');
     api_plugin_register_hook('pihi', 'top_header_tabs', 'pihi_show_tab', 'setup.php');
     api_plugin_register_hook('pihi', 'top_graph_header_tabs', 'pihi_show_tab', 'setup.php');
-
     api_plugin_register_hook('pihi', 'config_arrays', 'pihi_config_arrays', 'setup.php');
-
     api_plugin_register_hook('pihi', 'config_form','pihi_config_form', 'setup.php');
     api_plugin_register_hook('pihi', 'api_device_save', 'pihi_api_device_save', 'setup.php');
 
-
     // muze zapinat topx adminovi a davam moznost ho pridavat ostatnim
     api_plugin_register_realm('pihi', 'pihi.php,', 'Plugin PiHi - view', 1);
-
     pihi_setup_database();
 }
-
 
 
 function pihi_setup_database()	{
@@ -31,18 +25,12 @@ function pihi_setup_database()	{
     api_plugin_db_table_create ('pihi', 'plugin_pihi_setting', $data);
 
     $data = array();
-    //$data['columns'][] = array('name' => 'id', 'type' => 'int(11)', 'NULL' => false,'auto_increment' => true);
     $data['columns'][] = array('name' => 'host_id', 'type' => "int(11)", 'NULL' => false);
     $data['columns'][] = array('name' => 'duration', 'type' => "decimal(6,2)", 'NULL' => true);
     $data['columns'][] = array('name' => 'date', 'type' => "datetime", 'NULL' => false);
-    //$data['primary'] = '(host_id,date)';
     $data['type'] = 'MyISAM';
     $data['comment'] = 'pihi data';
     api_plugin_db_table_create ('pihi', 'plugin_pihi_data', $data);
-
-//    db_execute ("INSERT INTO plugin_topx_source (sorting,dt_name,hash,operation,unit,final_operation,final_unit,final_number) values ('desc','ucd/net - Load Average - 1 Minute','9b82d44eb563027659683765f92c9757','load_1min=load_1min','Load','strip','load','2')");
-//    db_execute ("ALTER TABLE plugin_pihi_data add index (host_id)");
-    // ! mozna jeste udelat pihi_statistika na soucty apod.
 
 }
 
@@ -73,7 +61,6 @@ function plugin_pihi_check_config () {
 }
 
 
-
 function pihi_poller_bottom () {
     global $config;
 	
@@ -91,21 +78,16 @@ function pihi_poller_bottom () {
 	foreach ($list_of_hosts as $host)	{
 	    $in .= $host['host_id'] . ',';
 
-	// delete old data
-	if (date('H') == 23 && date('i') > 53)	{
-	    $host['days'];
-	    db_execute('delete from plugin_pihi_data where host_id=' . $host['host_id'] . ' and date < date_sub(now(), \'interval ' . $host['days'] . ' day\')');
-	}    
-
-
+	    // delete old data
+	    if (date('H') == 23 && date('i') > 53)	{
+		$host['days'];
+		db_execute('delete from plugin_pihi_data where host_id=' . $host['host_id'] . ' and date < date_sub(now(), \'interval ' . $host['days'] . ' day\')');
+	    }    
 	}
 	$in = substr($in,0,-1);
     
 	db_execute ("insert into plugin_pihi_data (host_id,duration,date) select id,round(cur_time,3),now() from host where id in ($in)");
-
     }
-    
-        
         
     list($micro,$seconds) = explode(" ", microtime());
     $end = $seconds + $micro;
@@ -155,9 +137,6 @@ function pihi_config_form () {
                                 //'on_change' => 'changeNotify()',
                                 'default' => '0',
                                 'form_id' => false
-
-
-
                         );
                 }
         }
@@ -200,26 +179,6 @@ function pihi_api_device_save($save) {
     	    }
 	} 
 
-
-/*
-
-        if (!isset($result[0]['disabled'])) {
-                return $save;
-        }
-
-        if ($save['disabled'] != $result[0]['disabled']) {
-                if ($save['disabled'] == '') {
-                        $sql = 'UPDATE plugin_pihi_setting SET days=' . $days . ' where host_id = ' . $save['id'];
-                } else {
-                        $sql = 'UPDATE thold_data SET thold_enabled = "off" WHERE host_id=' . $save['id'];
-                        plugin_thold_log_changes($save['id'], 'disabled_host');
-                }
-                $result = db_execute($sql);
-        }
-*/
-
-
-
         return $save;
 }
 
@@ -230,17 +189,6 @@ function pihi_config_arrays () {
                 'message' => __('If you enable pihi you have to select availability to ping/ping or snmp/ping and snmp', 'pihi'),
                 'type' => 'error'
         );
-
-
-
-/*
-        if (isset($_SESSION['thold_message']) && $_SESSION['thold_message'] != '') {
-                $messages['thold_message'] = array(
-                        'message' => $_SESSION['thold_message'],
-                        'type' => 'info'
-                );
-        }
-*/
 }
 
 
