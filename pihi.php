@@ -10,39 +10,27 @@ $poller_interval = read_config_option('poller_interval');
 $selectedTheme = get_selected_theme();
 
 
-$ar_age = array ("168" => "Week", "24" => "Day", "6" => "6 hours", "1" => "1 hour"); 
+$ar_age = array ('168' => 'Week', '24' => 'Day', '6' => '6 hours', '1' => '1 hour'); 
 
 
 /* if the user pushed the 'clear' button */
 if (get_request_var('clear_x')) {
-    unset($_SESSION["age"]);
+    unset($_SESSION['age']);
 }
 
-
 if ( isset_request_var ('age') )
-//    $_SESSION["age"] = get_request_var ('age');
-    $_SESSION["age"] = get_filter_request_var ('age');
-if (!isset($_SESSION["age"]))
-    $_SESSION["age"] = "6";
-
+    $_SESSION['age'] = get_filter_request_var ('age');
+if (!isset($_SESSION['age']))
+    $_SESSION['age'] = 6;
 
 if ( isset_request_var ('host') )
-    $_SESSION["host"] = get_filter_request_var ('host');
-//if (!isset($_SESSION["host"]))
-//    $_SESSION["host"] = '';
-
+    $_SESSION['host'] = get_filter_request_var ('host');
 
 if ( isset_request_var ('from') )
-    //$_SESSION['from'] = get_request_var ('from');
-    
     $_SESSION['from'] = get_filter_request_var ('from', FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/')));
 
 
-
 general_header();
-
-//print "<link type='text/css' href='" . $config["url_path"] . "plugins/topx/themes/common.css' rel='stylesheet'>\n";
-//print "<link type='text/css' href='" . $config["url_path"] . "plugins/topx/themes/" . $selectedTheme . ".css' rel='stylesheet'>\n";
 
 echo "<link type='text/css' href='" . $config['url_path'] . "plugins/pihi/themes/common.css' rel='stylesheet'>";
 
@@ -62,12 +50,10 @@ function applyViewAgeFilterChange(objForm) {
 </script>
 <?php
 
-html_start_box("<strong>Ping history</strong>", "100%", $colors["header"], "3", "center", "");
-
-
+html_start_box('<strong>Ping history</strong>', '100%', $colors['header'], '3', 'center', '');
 ?>
 
-<tr bgcolor="#<?php print $colors["panel"];?>">
+<tr bgcolor="#<?php print $colors['panel'];?>">
  <td>
   <form name="form_pihi" action="pihi.php">
    <table width="100%" cellpadding="0" cellspacing="0">
@@ -81,20 +67,19 @@ html_start_box("<strong>Ping history</strong>", "100%", $colors["header"], "3", 
 <?php
 foreach ($ar_age as $key=>$value)	{
     if ($_SESSION["age"] == $key)
-	echo "<option value=\"$key\" selected=\"selected\">$value</option>\n";
+	echo '<option value=\'' . $key . '\' selected="selected">' . $value . '</option>';
     else    
-	echo "<option value=\"$key\">$value</option>\n";
+	echo '<option value=\'' . $key . '\'>' . $value .'</option>';
 }
 ?>
-
       </select>
      </td>
 
      
-     <td nowrap style='white-space: nowrap;' width="50">
+     <td nowrap style='white-space: nowrap;' width='50'>
       &nbsp;Host:&nbsp;
      </td>
-     <td width="1">
+     <td width='1'>
       <select name="host" onChange="applyViewAgeFilterChange(document.form_pihi)">
 
 <?php
@@ -110,27 +95,6 @@ foreach ($hosts as $host)	{
 	echo '<option value="' . $host['host_id'] . '">' . $host['description'] . '</option>';
 }
 
-/*
-
-      </select>
-     </td>
-     <td nowrap style='white-space: nowrap;' width="20">
-      &nbsp;Order:&nbsp;
-     </td>
-     <td width="1">
-      <select name="sort" onChange="applyViewAgeFilterChange(document.form_topx)">
-<?php
-foreach ($ar_sort as $key=>$value)	{
-    if ($_SESSION["sort"] == $key)
-	echo "<option value=\"$key\" selected=\"selected\">$value</option>\n";
-    else
-	echo "<option value=\"$key\">$value</option>\n";
-}
-?>
-      </select>
-     </td>
-
-*/
 ?>
      <td nowrap>
       &nbsp;<input type="submit" value="Go" title="Set/Refresh Filters">
@@ -142,23 +106,19 @@ foreach ($ar_sort as $key=>$value)	{
 </td>
 <td>
 
-
-
 <?php
 
-$mins = ($_SESSION['age']*60) + date("i");
+$mins = ($_SESSION['age']*60) + date('i');
 
 if (!isset($_SESSION['from']))
     $_SESSION['from'] = db_fetch_cell ('select now()');
 
 
 $selected_date = db_fetch_cell ('select min(date) as xdate from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' and date between date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) and \'' . $_SESSION['from'] . '\'');
-//echo '<br/>select min(date) as xdate from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' and date between date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) and \'' . $_SESSION['from'] . '\'<br/>';
 
 // before
 if (db_fetch_cell ('select count(date) from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' and date < \'' . $_SESSION['from'] . '\''))	{
     $before = db_fetch_cell ('select date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute)');
-
 }
 
 if (db_fetch_cell ('select count(date) from plugin_pihi_data where host_id = ' . $_SESSION['host'] . ' and date > \'' . $_SESSION['from'] . '\''))	{
@@ -185,12 +145,7 @@ $sql  = 'select duration,date, hour(date) as xhour, minute(date) as xminute from
 $sql .= ' and date between date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) and \'' . $_SESSION['from'] . '\'';
 $sql .= ' order by date';
 
-//echo $sql;	
-
-// tady zjistit, jake vsechny typy mam (cpu, hdd, ...)
 $result = db_fetch_assoc ($sql);
-
-
 
 if (count($result) > 0)	{    
     $date = '';
@@ -203,7 +158,6 @@ if (count($result) > 0)	{
 	$date .= '"' . substr($row['date'],5,-3) . '",';
 	$dura .= $row['duration'] . ',';
 
-    
 	if ($hour != $row['xhour'])
 	    echo '<tr><td>' . $row['xhour'] . ' </td>';
     
@@ -225,22 +179,17 @@ if (count($result) > 0)	{
     $date = substr($date,0,-1);
     $dura = substr($dura,0,-1);
 
-//echo "<br/>$date<br/><br/>";
-//echo "<br/>$dura<br/><br/>";
-
-              //$xid = "x" . substr(md5($dispdata['line']['title1']),0,7);
-
-                print "<div style=\"background: white;\"><canvas  width=\"800\" height=\"300\" id='mychart' ></canvas>\n";
-                print "<script type='text/javascript'>\n";
-                $title1 = 'Ping history';
-                $line_labels = $date;
-                $line_values = $dura;
+    print '<div style="background: white;"><canvas  width="800" height="300" id="mychart"></canvas>';
+    print '<script type="text/javascript">';
+    $title1 = 'Ping history';
+    $line_labels = $date;
+    $line_values = $dura;
 
 
-                print <<<EOF
+    print <<<EOF
 var ctx = document.getElementById("mychart").getContext("2d");
 new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: {
         labels: [$line_labels],
         datasets: [{
@@ -270,19 +219,14 @@ new Chart(ctx, {
 });
 
 EOF;
-print "</script>\n";
+print '</script>';
 
-print "</div>\n";
-
-
-    
-    
-    
-    // end of graph
+print '</div>';
+// end of graph
 
 }
 else	{	
-    echo "No data";
+    echo 'No data';
 }
 
 
