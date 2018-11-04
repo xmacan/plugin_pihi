@@ -81,7 +81,7 @@ function pihi_poller_bottom () {
 	    // delete old data
 	    if (date('H') == 23 && date('i') > 53)	{
 		$host['days'];
-		db_execute('delete from plugin_pihi_data where host_id=' . $host['host_id'] . ' and date < date_sub(now(), \'interval ' . $host['days'] . ' day\')');
+		db_execute('delete from plugin_pihi_data where host_id=' . $host['host_id'] . ' and date < date_sub(now(), interval ' . $host['days'] . ' day)');
 	    }    
 	}
 	$in = substr($in,0,-1);
