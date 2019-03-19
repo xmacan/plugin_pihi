@@ -29,6 +29,9 @@ If you find a problem, let me know via github or https://forums.cacti.net
    
 
 ## Changelog
+	--- 0.3
+		Fix few bugs
+		
 	--- 0.2
 		First release with basic functionality
 

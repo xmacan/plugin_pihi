@@ -73,7 +73,7 @@ function pihi_poller_bottom () {
 
     // tady ulozit z host do moji tabulky nebo rrd
     $in = '';
-    $list_of_hosts = db_fetch_assoc ('select host_id,days from plugin_pihi_setting');
+    $list_of_hosts = db_fetch_assoc ('SELECT host_id,days FROM plugin_pihi_setting');
     if (count($list_of_hosts) > 0)	{
 	foreach ($list_of_hosts as $host)	{
 	    $in .= $host['host_id'] . ',';
@@ -81,20 +81,20 @@ function pihi_poller_bottom () {
 	    // delete old data
 	    if (date('H') == 23 && date('i') > 53)	{
 		$host['days'];
-		db_execute('delete from plugin_pihi_data where host_id=' . $host['host_id'] . ' and date < date_sub(now(), interval ' . $host['days'] . ' day)');
+		db_execute('DELETE FROM plugin_pihi_data WHERE host_id=' . $host['host_id'] . ' AND date < date_sub(now(), interval ' . $host['days'] . ' day)');
 	    }    
 	}
 	$in = substr($in,0,-1);
     
-	db_execute ("insert into plugin_pihi_data (host_id,duration,date) select id,round(cur_time,3),now() from host where id in ($in)");
+	db_execute ("INSERT INTO plugin_pihi_data (host_id,duration,date) 
+		     SELECT id,round(cur_time,3),now() FROM host WHERE id IN ($in)");
     }
         
     list($micro,$seconds) = explode(" ", microtime());
-    $end = $seconds + $micro;
+    $total_time = $seconds + $micro - $start;
          
     /* log statistics */
-    //$topx_stats = sprintf("Time:%01.4f DT:%s DS:%s CYCLES: %s", $end - $start, $dt_count, $ds_count, $cycles);
-    cacti_log('PIHI STATS: hosts: ' . count($list_of_hosts) . '. Duration: ' . ($end-$start));
+    cacti_log('PIHI STATS: hosts: ' . count($list_of_hosts) . '. Duration: ' . substr($total_time,0,5));
 }
 
 
@@ -160,10 +160,9 @@ function pihi_api_device_save($save) {
 	    }
 	    else	{
         	db_execute('UPDATE plugin_pihi_setting SET days=' . $days . ' where host_id = ' . $save['id']);
-        	db_execute('insert into plugin_pihi_setting (host_id,days) values (' . $save['id'] . ',' . $days . ')');
+        	db_execute('INSERT INTO plugin_pihi_setting (host_id,days) VALUES (' . $save['id'] . ',' . $days . ')');
 	    }
 	}
-
 	elseif ($enabled && $days == 0)	{	// disable pihi
             db_execute('UPDATE plugin_pihi_setting SET days=0 where host_id = ' . $save['id']);
             db_execute('DELETE FROM plugin_pihi_setting where host_id =' .  $save['id']);
@@ -191,6 +190,3 @@ function pihi_config_arrays () {
         );
 }
 
-
-
-?>
