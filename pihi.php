@@ -15,13 +15,13 @@ $ar_age = array ('168' => 'Week', '24' => 'Day', '6' => '6 hours', '1' => '1 hou
 
 /* if the user pushed the 'clear' button */
 if (get_request_var('clear_x')) {
-    unset($_SESSION['age']);
+    unset($_SESSION['pihi_age']);
 }
 
 if ( isset_request_var ('age') )
-    $_SESSION['age'] = get_filter_request_var ('age');
-if (!isset($_SESSION['age']))
-    $_SESSION['age'] = 6;
+    $_SESSION['pihi_age'] = get_filter_request_var ('age');
+if (!isset($_SESSION['pihi_age']))
+    $_SESSION['pihi_age'] = 6;
 
 if ( isset_request_var ('host') )
     $_SESSION['host'] = get_filter_request_var ('host');
@@ -65,7 +65,7 @@ html_start_box('<strong>Ping history</strong>', '100%', '', '3', 'center', '');
 
 <?php
 foreach ($ar_age as $key=>$value)	{
-    if ($_SESSION["age"] == $key)
+    if ($_SESSION["pihi_age"] == $key)
 	echo '<option value=\'' . $key . '\' selected="selected">' . $value . '</option>';
     else    
 	echo '<option value=\'' . $key . '\'>' . $value .'</option>';
@@ -111,7 +111,7 @@ if (count($hosts) > 0)	{
 
 if (!empty($_SESSION['host']))	{
 
-    $mins = ($_SESSION['age']*60) + date('i');
+    $mins = ($_SESSION['pihi_age']*60) + date('i');
 
     if (!isset($_SESSION['from']))
 	$_SESSION['from'] = db_fetch_cell ('select now()');
