@@ -34,7 +34,6 @@ general_header();
 
 echo "<link type='text/css' href='" . $config['url_path'] . "plugins/pihi/themes/common.css' rel='stylesheet'>";
 
-
 ?>
 
 <script type="text/javascript">
@@ -58,7 +57,7 @@ html_start_box('<strong>Ping history</strong>', '100%', '', '3', 'center', '');
   <form name="form_pihi" action="pihi.php">
    <table width="100%" cellpadding="0" cellspacing="0">
     <tr class="navigate_form">
-     <td nowrap style='white-space: nowrap;' width="50">
+     <td style='white-space: nowrap;' width="50">
       Age:&nbsp;
      </td>
      <td width="1">
@@ -76,27 +75,29 @@ foreach ($ar_age as $key=>$value)	{
      </td>
 
      
-     <td nowrap style='white-space: nowrap;' width='50'>
+     <td style='white-space: nowrap;' width='50'>
       &nbsp;Host:&nbsp;
      </td>
      <td width='1'>
       <select name="host" onChange="applyViewAgeFilterChange(document.form_pihi)">
 
 <?php
-$hosts = db_fetch_assoc ('SELECT distinct(host_id) as host_id, description FROM plugin_pihi_setting LEFT JOIN host ON host.id=host_id ORDER BY description');
-foreach ($hosts as $host)	{
-    // default host
-    if (!isset($_SESSION['host'])) $_SESSION['host'] = $host['host_id'];
+$hosts = db_fetch_assoc ('SELECT id, description FROM host WHERE pihi_days > 0 ORDER BY description');
+if (count($hosts) > 0)	{
+    foreach ($hosts as $host)	{
+	// default host
+	if (!isset($_SESSION['host'])) $_SESSION['host'] = $host['id'];
 
-    if ($_SESSION['host'] == $host['host_id'])	{
-	echo '<option value="' . $host['host_id'] . '" selected="selected">' . $host['description'] . '</option>';
+	if ($_SESSION['host'] == $host['id'])	{
+	    echo '<option value="' . $host['id'] . '" selected="selected">' . $host['description'] . '</option>';
+	}
+	else
+	    echo '<option value="' . $host['id'] . '">' . $host['description'] . '</option>';
     }
-    else
-	echo '<option value="' . $host['host_id'] . '">' . $host['description'] . '</option>';
 }
 
 ?>
-     <td nowrap>
+     <td>
       &nbsp;<input type="submit" value="Go" title="Set/Refresh Filters">
       <input type="submit" name="clear_x" value="Clear" title="Clear Filters">
      </td>
@@ -108,85 +109,86 @@ foreach ($hosts as $host)	{
 
 <?php
 
-$mins = ($_SESSION['age']*60) + date('i');
+if (!empty($_SESSION['host']))	{
 
-if (!isset($_SESSION['from']))
-    $_SESSION['from'] = db_fetch_cell ('select now()');
+    $mins = ($_SESSION['age']*60) + date('i');
 
+    if (!isset($_SESSION['from']))
+	$_SESSION['from'] = db_fetch_cell ('select now()');
 
-$selected_date = db_fetch_cell ('SELECT min(date) as xdate FROM plugin_pihi_data WHERE host_id = ' . $_SESSION['host'] . ' AND date BETWEEN date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) and \'' . $_SESSION['from'] . '\'');
+    $selected_date = db_fetch_cell ('SELECT min(date) as xdate FROM plugin_pihi_data WHERE host_id = ' . $_SESSION['host'] . ' AND date BETWEEN date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) and \'' . $_SESSION['from'] . '\'');
 
-// before
-if (db_fetch_cell ('SELECT count(date) FROM plugin_pihi_data WHERE host_id = ' . $_SESSION['host'] . ' AND date < \'' . $_SESSION['from'] . '\''))	{
-    $before = db_fetch_cell ('SELECT date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute)');
-}
+    // before
+    if (db_fetch_cell ('SELECT count(date) FROM plugin_pihi_data WHERE host_id = ' . $_SESSION['host'] . ' AND date < \'' . $_SESSION['from'] . '\''))	{
+	$before = db_fetch_cell ('SELECT date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute)');
+    }
 
-if (db_fetch_cell ('SELECT count(date) FROM plugin_pihi_data WHERE host_id = ' . $_SESSION['host'] . ' AND date > \'' . $_SESSION['from'] . '\''))	{
-    $after = db_fetch_cell ('SELECT date_add(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute)');
-}
+    if (db_fetch_cell ('SELECT count(date) FROM plugin_pihi_data WHERE host_id = ' . $_SESSION['host'] . ' AND date > \'' . $_SESSION['from'] . '\''))	{
+	$after = db_fetch_cell ('SELECT date_add(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute)');
+    }
 
-echo '<b>';
-if (isset($before) && $before > 0) echo '<a href="?from=' . $before . '">&lt;&lt;</a> ';
-else echo '&lt;&lt; ';
+    echo '<b>';
+    if (isset($before) && $before > 0) echo '<a href="?from=' . $before . '">&lt;&lt;</a> ';
+    else echo '&lt;&lt; ';
 
-echo $selected_date;
+    echo $selected_date;
 
-if (isset($after) && $after > 0) echo '<a href="?from=' . $after . '">&gt;&gt;</a> ';
-else echo '&gt;&gt; ';
-echo '</b>';
-
-
-echo '</td></tr>';
-html_end_box();
+    if (isset($after) && $after > 0) echo '<a href="?from=' . $after . '">&gt;&gt;</a> ';
+    else echo '&gt;&gt; ';
+    echo '</b>';
 
 
+    echo '</td></tr>';
+    html_end_box();
 
-$sql  = 'SELECT duration,date, hour(date) as xhour, minute(date) as xminute FROM plugin_pihi_data 
+
+
+    $sql  = 'SELECT duration,date, hour(date) as xhour, minute(date) as xminute FROM plugin_pihi_data 
 	 WHERE host_id = ' . $_SESSION['host'] . 
 	 ' AND date BETWEEN date_sub(\'' . $_SESSION['from'] . '\',interval ' . $mins . ' minute) 
 	  AND \'' . $_SESSION['from'] . '\' ORDER BY date';
 
-//echo $sql;
+//    echo $sql;
 
-$result = db_fetch_assoc ($sql);
+    $result = db_fetch_assoc ($sql);
 
-if (count($result) > 0)	{    
-    $date = '';
-    $dura = '';
+    if (count($result) > 0)	{    
+	$date = '';
+	$dura = '';
 
-    $hour = -1;
-    $first = true;
-    echo '<table class="pihi_table">';
-    foreach ($result as $row)	{
-	$date .= '"' . substr($row['date'],5,-3) . '",';
-	$dura .= $row['duration'] . ',';
+	$hour = -1;
+	$first = true;
+	echo '<table class="pihi_table">';
+	foreach ($result as $row)	{
+	    $date .= '"' . substr($row['date'],5,-3) . '",';
+	    $dura .= $row['duration'] . ',';
 
-	if ($hour != $row['xhour'])
-	    echo '<tr><td>' . $row['xhour'] . ' </td>';
+	    if ($hour != $row['xhour'])
+		echo '<tr><td>' . $row['xhour'] . ' </td>';
     
-	if ($first)	{
-	    echo '<td>' . $row['xminute'] . '<br/>';
+	    if ($first)	{
+		echo '<td>' . $row['xminute'] . '<br/>';
+	    }
+	    else
+		echo '<td>';
+
+	    echo $row['duration'] > 30 ? '<font color="red"><b>' . $row['duration'] . '</b></font>' : $row['duration'] . '</td>';
+
+	    echo '</td>';
+	    $hour = $row['xhour'];
 	}
-	else
-	    echo '<td>';
-
-	echo $row['duration'] > 30 ? '<font color="red"><b>' . $row['duration'] . '</b></font>' : $row['duration'] . '</td>';
-
-	echo '</td>';
-	$hour = $row['xhour'];
-    }
-    echo '</table>';
+	echo '</table>';
     
-    // displaying graph
+	// displaying graph
 
-    $date = substr($date,0,-1);
-    $dura = substr($dura,0,-1);
+	$date = substr($date,0,-1);
+	$dura = substr($dura,0,-1);
 
-    print '<div style="background: white;"><canvas  width="800" height="300" id="mychart"></canvas>';
-    print '<script type="text/javascript">';
-    $title1 = 'Ping history';
-    $line_labels = $date;
-    $line_values = $dura;
+	print '<div style="background: white;"><canvas  width="800" height="300" id="mychart"></canvas>';
+	print '<script type="text/javascript">';
+	$title1 = 'Ping history';
+	$line_labels = $date;
+	$line_values = $dura;
 
 
     print <<<EOF
@@ -222,16 +224,20 @@ new Chart(ctx, {
 });
 
 EOF;
-print '</script>';
+	print '</script>';
 
-print '</div>';
-// end of graph
-
+	print '</div>';
+	// end of graph
+    }
+    else	{	// host selected,,but no data
+	echo 'No data';
+    }
 }
-else	{	
-    echo 'No data';
+else	{ 	// without hosts
+    echo '</td></tr>';
+    html_end_box();
+
+    echo 'No host with Pihi enabled';
 }
-
-
 
 bottom_footer();
