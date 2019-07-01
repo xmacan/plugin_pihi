@@ -11,18 +11,18 @@ Petr Macek (petr.macek@kostax.cz)
 
 
 ## Installation
-Copy directory pihi to plugins directory
-Check file permission (Linux/unix - readable for www server)
-Enable plugin (Console -> Plugin management)
+Copy directory pihi to plugins directory  
+Check file permission (Linux/unix - readable for www server)  
+Enable plugin (Console -> Plugin management)  
 
 ## How to use?
 Console -> Devices -> Choose host -> Enable Ping History in form 
     
 ## Upgrade    
-Copy and rewrite files
-Check file permission (Linux/unix - readable for www server)
-Disable and deinstall old version (Console -> Plugin management) 
-Install and enable new version (Console -> Plugin management) 
+Copy and rewrite files  
+Check file permission (Linux/unix - readable for www server)  
+Disable and deinstall old version (Console -> Plugin management)  
+Install and enable new version (Console -> Plugin management)   
     
 ## Possible Bugs or any ideas?
 If you find a problem, let me know via github or https://forums.cacti.net
