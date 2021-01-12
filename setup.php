@@ -1,7 +1,7 @@
 <?php
 /*
  +-------------------------------------------------------------------------+
- | Copyright (C) 2015-2019 Petr Macek                                      |
+ | Copyright (C) 2015-2020 Petr Macek                                      |
  |                                                                         |
  | This program is free software; you can redistribute it and/or           |
  | modify it under the terms of the GNU General Public License             |
@@ -52,7 +52,7 @@ function pihi_setup_database()	{
     $data['columns'][] = array('name' => 'host_id', 'type' => "int(11)", 'NULL' => false);
     $data['columns'][] = array('name' => 'duration', 'type' => "decimal(6,2)", 'NULL' => true);
     $data['columns'][] = array('name' => 'date', 'type' => "datetime", 'NULL' => false);
-    $data['type'] = 'MyISAM';
+    $data['type'] = 'InnoDB';
     $data['comment'] = 'pihi data';
     api_plugin_db_table_create ('pihi', 'plugin_pihi_data', $data);
 
@@ -99,7 +99,7 @@ function pihi_poller_bottom () {
     $poller_interval = read_config_option("poller_interval");
 
     $in = '';
-    $list_of_hosts = db_fetch_assoc ('SELECT id,pihi_days FROM host where pihi_days > 0');
+    $list_of_hosts = db_fetch_assoc ('SELECT id,pihi_days FROM host WHERE pihi_days > 0');
     if (count($list_of_hosts) > 0)	{
 	foreach ($list_of_hosts as $host)	{
 	    $in .= $host['id'] . ',';
@@ -120,7 +120,7 @@ function pihi_poller_bottom () {
     $total_time = $seconds + $micro - $start;
          
     /* log statistics */
-    cacti_log('PIHI STATS: hosts: ' . count($list_of_hosts) . '. Duration: ' . substr($total_time,0,5));
+    cacti_log('PIHI STATS: hosts: ' . count($list_of_hosts) . '. Duration: ' . round($total_time,2));
 }
 
 
@@ -138,6 +138,11 @@ function pihi_show_tab () {
 
 function pihi_config_form () {
         global $fields_host_edit;
+  
+  // jinak se mi zobrazi i kdyz je plugin vypnuty
+	if (db_fetch_cell("SELECT directory FROM plugin_config WHERE directory='pihi' and status=1")) {
+
+  
         $fields_host_edit2 = $fields_host_edit;
         $fields_host_edit3 = array();
         foreach ($fields_host_edit2 as $f => $a) {
@@ -167,6 +172,7 @@ function pihi_config_form () {
                 }
         }
         $fields_host_edit = $fields_host_edit3;
+}
 }
 
 
@@ -216,10 +222,10 @@ function pihi_config_form () {
 function pihi_api_device_save($save) {
         global $config;
 
-
+// kdyz je plugin zapnuty, pritece mi promenna
         if (isset_request_var('pihi_days')) {
                 $days = form_input_validate(get_nfilter_request_var('pihi_days'), 'pihi_days', '^[0-9]{1,2}$', true, 3);
-	} 
+	}
 
         $enabled = db_fetch_cell('SELECT * FROM host WHERE id = ' . $save['id'] . ' and pihi_days > 0') > 0  ? true : false;
 
@@ -228,14 +234,19 @@ function pihi_api_device_save($save) {
 		raise_message('pihi_save');
 	    }
 	    else	{
-        	db_execute('UPDATE host SET pihi_days=' . $days . ' where id = ' . $save['id']);
+$save['pihi_days'] = $days;
+// BLBOST - kdyz ten host neni ulozeny, nemuzu delat update
+
+//        	db_execute('UPDATE host SET pihi_days=' . $days . ' WHERE id = ' . $save['id']);
 //        	db_execute('INSERT INTO plugin_pihi_setting (host_id,days) VALUES (' . $save['id'] . ',' . $days . ')');
 	    }
 	}
 	elseif ($enabled && $days == 0)	{	// disable pihi
-            db_execute('UPDATE host SET pihi_days=0 where id = ' . $save['id']);
+	$save['pihi_days'] = 0;
+
+//            db_execute('UPDATE host SET pihi_days=0 WHERE id = ' . $save['id']);
 //            db_execute('DELETE FROM plugin_pihi_setting where host_id =' .  $save['id']);
-            db_execute('DELETE FROM  plugin_pihi_data where host_id =' .  $save['id']);
+            db_execute('DELETE FROM  plugin_pihi_data WHERE host_id =' .  $save['id']);
 	}
 	elseif ($enabled && $days > 0)	{	// maybe change history
 
@@ -243,7 +254,9 @@ function pihi_api_device_save($save) {
 		raise_message('pihi_save');
 	    }
 	    else	{
-        	db_execute('UPDATE host SET pihi_days=' . $days . ' where id = ' . $save['id']);
+	    $save['pihi_days'] = $days;
+
+//        	db_execute('UPDATE host SET pihi_days=' . $days . ' WHERE id = ' . $save['id']);
     	    }
 	} 
 
